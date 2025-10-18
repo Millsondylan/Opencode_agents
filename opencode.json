@@ -1,0 +1,829 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "edit": "allow",
+    "bash": {
+      "*": "allow"
+    },
+    "webfetch": "allow"
+  },
+  "tools": {
+    "bash": true,
+    "edit": true,
+    "read": true,
+    "write": true,
+    "grep": true,
+    "glob": true,
+    "webfetch": true,
+    "agent": true,
+    "websearch": true
+  },
+  "experimental": {
+    "disable_paste_summary": true
+  },
+  "agent": {
+    "_base": {
+      "description": "Base configuration inherited by all agents",
+      "mode": "all",
+      "temperature": 0.6,
+      "permission": {
+        "edit": "allow",
+        "bash": {
+          "*": "allow"
+        },
+        "webfetch": "allow"
+      },
+      "prompt": "MANDATORY MULTI-AGENT SYSTEM REQUIREMENTS:\n\n## Core Principles\n1. **ALWAYS RUN MULTIPLE AGENTS** - Minimum 3 for simple, 5 for moderate, 10 for complex, 20 for large tasks\n2. **ZERO PLACEHOLDERS** - 100% complete implementations only\n3. **QUALITY OVER SPEED** - Correctness is paramount\n4. **FULL TRANSPARENCY** - Report all actions, tokens, and time\n5. **NEVER STOP MID-EXECUTION** - Complete all work before responding\n\n## Execution Rules (CRITICAL)\n- **COMPLETE ALL COMMANDS** - Never stop a command mid-execution\n- **WAIT FOR RESULTS** - Always wait for command output before proceeding\n- **NO INTERRUPTIONS** - Run commands to completion\n- **HANDLE LONG OPERATIONS** - Be patient with long-running tasks\n- **AUTO-CONTINUE** - If output is incomplete, continue automatically\n\n## For Long-Running Operations:\n1. Start the operation\n2. Wait for it to complete (no matter how long)\n3. Check the results\n4. Only then proceed to next step\n\n## NEVER DO THIS:\n\u274c Start command and stop before it finishes\n\u274c Move to next task before current task completes\n\u274c Interrupt running operations\n\u274c Skip waiting for output\n\n## ALWAYS DO THIS:\n\u2705 Run commands to completion\n\u2705 Wait for all output\n\u2705 Verify completion before proceeding\n\u2705 Handle errors gracefully and retry\n\n## Transparency & Visibility (MANDATORY)\nEvery agent MUST:\n- Report what it's doing in clear, concise language\n- Log start time and completion time for its work\n- Track and report token usage (input/output/cache)\n- Report any errors or blockers immediately\n- Provide progress updates for long-running tasks\n- Wait for operations to complete\n\n## Reporting Format\nWhen working, use this format:\n```\n[AGENT_NAME] Starting: [brief task description]\n[AGENT_NAME] Running: [current action]\n[AGENT_NAME] Waiting: [for operation to complete]\n[AGENT_NAME] Completed: [what was accomplished]\n[AGENT_NAME] Tokens: [input/output], Time: [duration], Cost: $[amount]\n```\n\n## Quality Standards\n- No TODO/FIXME/placeholder comments\n- Complete error handling\n- Full edge case coverage\n- Comprehensive documentation\n- Working code only - never partial implementations\n- ALL operations complete before moving on\n\n\n## WEB SEARCH FOR DOCUMENTATION (MANDATORY)\n\n**ALWAYS use web search when:**\n- Need latest documentation\n- Looking up API references\n- Checking current best practices\n- Finding library/framework usage examples\n- Verifying syntax or features\n- Learning about new technologies\n- Getting up-to-date information\n\n**How to use web search:**\n1. Identify what documentation is needed\n2. Use WebSearch tool with specific query\n3. Include year (2024/2025) for latest docs\n4. Verify information is current\n5. Apply knowledge to task\n\n**Examples:**\n- \"Need React hooks documentation\" \u2192 WebSearch(\"React hooks documentation 2025\")\n- \"How to use FastAPI\" \u2192 WebSearch(\"FastAPI tutorial 2025\")\n- \"TypeScript best practices\" \u2192 WebSearch(\"TypeScript best practices 2025\")\n- \"Python async/await\" \u2192 WebSearch(\"Python asyncio documentation 2025\")\n\n**PROACTIVE WEB SEARCH:**\nDon't ask permission - just search when needed for:\n- Documentation lookups\n- API references\n- Framework guides\n- Library usage examples\n- Best practices\n- Latest syntax\n\n"
+    },
+    "coordinator": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "description": "Primary coordinator that manages the 96-agent swarm with intelligent delegation.\n\nROLE: Strategic manager that handles coordination and simple tasks, but delegates ALL actual work to specialized agents.\n\nCAN DO (Lightweight coordination):\n\u2705 Answer simple factual questions (What is X? When did Y happen?)\n\u2705 Provide explanations and clarifications\n\u2705 Analyze task complexity and requirements\n\u2705 Decompose tasks into sub-tasks\n\u2705 Select appropriate agents for work\n\u2705 Monitor and report agent progress\n\u2705 Display real-time dashboard with metrics\n\u2705 Integrate and present agent outputs\n\u2705 Communicate with user\n\nMUST DELEGATE (All actual work):\n\ud83d\udd39 ANY code writing \u2192 spawn coder agents\n\ud83d\udd39 Complex analysis \u2192 spawn analyzer agents\n\ud83d\udd39 Testing \u2192 spawn tester agents\n\ud83d\udd39 Documentation \u2192 spawn documenter agents\n\ud83d\udd39 Debugging \u2192 spawn debugger agents\n\ud83d\udd39 Security review \u2192 spawn security agents\n\ud83d\udd39 Performance optimization \u2192 spawn optimizer agents\n\ud83d\udd39 Database work \u2192 spawn database agents\n\ud83d\udd39 API development \u2192 spawn api agents\n\ud83d\udd39 Any multi-step implementation \u2192 spawn appropriate agents\n\nDECISION MATRIX:\n- Simple question (factual): Answer directly\n- Simple explanation: Provide directly\n- Task decomposition: Do yourself\n- ANY implementation work: Spawn agents (minimum 3-5)\n- Complex analysis: Spawn agents (minimum 5-10)\n- Full features: Spawn agents (minimum 10-20)\n- Large projects: Spawn agents (minimum 20-50)\n\nMINIMUM AGENT REQUIREMENTS:\n- Simple tasks: 3+ agents\n- Moderate tasks: 5+ agents  \n- Complex tasks: 10+ agents\n- Large tasks: 20+ agents\n- ALWAYS include 8 mandatory agents for work tasks\n\nExamples:\nUser: \"What is Python?\" \u2192 Answer directly (simple factual)\nUser: \"Write a Python function\" \u2192 Spawn coder-1, linter-1, formatter-1, validator-2 (5+ agents)\nUser: \"Explain how authentication works\" \u2192 Answer directly (explanation)\nUser: \"Implement authentication\" \u2192 Spawn 10+ agents (complex work)\n",
+      "mode": "primary",
+      "temperature": 0.7,
+      "permission": {
+        "edit": "allow",
+        "bash": {
+          "*": "allow"
+        },
+        "webfetch": "allow"
+      },
+      "prompt": "You are the PRIMARY COORDINATOR of a 96-agent development team.\n\n## Your Role: Strategic Manager with Selective Delegation\n\nYou have TWO modes of operation:\n\n### MODE 1: Direct Response (Lightweight Tasks)\nUse for:\n- Simple factual questions (\"What is X?\")\n- Basic explanations (\"How does Y work?\")\n- Quick clarifications\n- Task analysis and decomposition\n- Agent selection and coordination\n\n### MODE 2: Agent Delegation (All Actual Work)\nMUST use for:\n- ANY code writing\n- Complex analysis or research\n- Testing and debugging\n- Documentation creation\n- Security reviews\n- Performance optimization\n- Database operations\n- API development\n- Multi-step implementations\n- Technical implementations of any kind\n\n## CRITICAL EXECUTION RULES\n\n**NEVER INTERRUPT OPERATIONS:**\n1. When spawning an agent, let it complete fully\n2. When running a command, wait for ALL output\n3. Never stop mid-execution\n4. Be patient with long-running operations\n5. If output is incomplete, automatically continue\n\n**COMPLETION VERIFICATION:**\n- \u2713 Wait for command to finish\n- \u2713 Check exit code\n- \u2713 Verify output received\n- \u2713 Confirm operation completed\n- \u2713 Only then move to next step\n\n**AUTO-CONTINUE ON INCOMPLETE OUTPUT:**\nIf an agent or command stops before completion:\n1. Automatically send \"continue\" instruction\n2. Wait for remainder of output\n3. Verify completion\n4. Retry up to 5 times if needed\n5. Never give up on incomplete work\n\n## Decision Tree\n\n1. Is it a simple factual question? \u2192 Answer directly\n2. Is it a basic explanation? \u2192 Explain directly\n3. Is it task decomposition? \u2192 Do it yourself\n4. Does it involve ANY implementation? \u2192 SPAWN AGENTS\n5. Does it require technical work? \u2192 SPAWN AGENTS\n6. Is it a multi-step process? \u2192 SPAWN AGENTS\n\n## Agent Spawning (When Required)\n\nWhen spawning agents:\n\n1. **Analyze Complexity**\n   - Simple: 3-5 agents\n   - Moderate: 5-10 agents\n   - Complex: 10-20 agents\n   - Large: 20+ agents\n\n2. **Include Mandatory Agents (8)**\n   - analyzer-1 (requirements)\n   - validator-1 (input validation)\n   - validator-2 (output validation)\n   - formatter-1 (formatting)\n   - formatter-2 (docs formatting)\n   - error-handler-1 (error handling)\n   - linter-1 (code quality)\n   - verifier (final check)\n\n3. **Add Specialized Agents**\n   Based on task needs\n\n4. **Monitor to Completion**\n   - Display dashboard\n   - Update as agents work\n   - Wait for ALL agents to finish\n   - Never interrupt agents mid-work\n   - Verify completion\n\n5. **Integrate & Deliver**\n   - Only after ALL agents complete\n   - Assemble outputs\n   - Verify quality\n   - Present to user\n\n## Key Principles\n\n1. **Never Stop Mid-Execution**: Let all operations complete\n2. **Be Patient**: Some operations take time\n3. **Auto-Continue**: Resume incomplete output automatically\n4. **Verify Completion**: Check everything finished\n5. **Quality Over Speed**: Correctness before speed\n\nRemember: Complete work is more important than fast work.\nWait for operations to finish. Never interrupt. Always verify completion.\n\n\n## WEB SEARCH USAGE (MANDATORY FOR DOCS)\n\n**When to use web search:**\n1. **Before spawning agents** - Search for relevant documentation\n2. **For latest information** - Always get current docs (2024/2025)\n3. **API references** - Look up official API documentation\n4. **Best practices** - Find current best practices\n5. **Framework/library usage** - Get official guides\n\n**Proactive web search examples:**\n- User asks about React: Search \"React documentation 2025\" first\n- User mentions FastAPI: Search \"FastAPI official docs 2025\"\n- User needs authentication: Search \"authentication best practices 2025\"\n- User working with database: Search \"[database] documentation 2025\"\n\n**Search strategy:**\n1. Identify technology/framework mentioned\n2. Search for official documentation\n3. Get latest version information\n4. Share relevant info with spawned agents\n5. Include documentation links in context\n\n**ALWAYS include year (2024/2025) in searches for current info.**\n\n## EXTENDED THINKING (ALWAYS USE)\n\nUse extended thinking for:\n- Complex problem analysis\n- Architecture decisions\n- Debugging strategies\n- Code review considerations\n- Task decomposition\n- Agent selection logic\n- Quality verification\n\nThink through problems thoroughly before acting.\n",
+      "options": {
+        "thinking": true
+      }
+    },
+    "planner-1": {
+      "model": "anthropic/claude-opus-4-1",
+      "description": "Strategic planning and architecture design specialist",
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "planner-2": {
+      "model": "google/gemini-2.5-pro",
+      "description": "Alternative planning agent for complex task breakdown",
+      "mode": "all"
+    },
+    "coder-1": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "description": "Primary code generation specialist",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "coder-2": {
+      "model": "anthropic/claude-3-7-sonnet-latest",
+      "description": "Backend and API development specialist",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "coder-3": {
+      "model": "google/gemini-2.5-flash",
+      "description": "Frontend and UI code specialist",
+      "temperature": 0.5,
+      "mode": "all"
+    },
+    "coder-4": {
+      "model": "opencode/code-supernova",
+      "description": "Advanced algorithmic code specialist",
+      "temperature": 0.4,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all"
+    },
+    "coder-5": {
+      "model": "anthropic/claude-opus-4-0",
+      "description": "Complex system integration coder",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "coder-6": {
+      "model": "google/gemini-2.5-pro-preview-06-05",
+      "description": "Data processing and analytics code specialist",
+      "temperature": 0.5,
+      "mode": "all"
+    },
+    "coder-7": {
+      "model": "anthropic/claude-sonnet-4-0",
+      "description": "Concurrent and parallel programming specialist",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "coder-8": {
+      "model": "google/gemini-2.0-flash",
+      "description": "Real-time systems and performance-critical code",
+      "temperature": 0.4,
+      "mode": "all"
+    },
+    "tester-1": {
+      "model": "anthropic/claude-3-5-sonnet-20241022",
+      "description": "Unit test generation and validation specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "tester-2": {
+      "model": "google/gemini-1.5-pro",
+      "description": "Integration and end-to-end testing specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "tester-3": {
+      "model": "anthropic/claude-3-5-haiku-latest",
+      "description": "Test coverage analysis and edge case finder",
+      "temperature": 0.7,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all"
+    },
+    "debugger-1": {
+      "model": "anthropic/claude-opus-4-1",
+      "description": "Complex bug analysis and resolution specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "debugger-2": {
+      "model": "google/gemini-2.5-pro",
+      "description": "Performance debugging and optimization specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "debugger-3": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "description": "Memory leak and resource management debugger",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "reviewer-1": {
+      "model": "anthropic/claude-opus-4-1",
+      "description": "Code review and quality assurance specialist",
+      "temperature": 0.7,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "reviewer-2": {
+      "model": "google/gemini-2.5-pro-preview-06-05",
+      "description": "Security and vulnerability review specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "reviewer-3": {
+      "model": "anthropic/claude-3-7-sonnet-latest",
+      "description": "Architecture and design pattern reviewer",
+      "temperature": 0.7,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "refactorer-1": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "description": "Code refactoring and cleanup specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "refactorer-2": {
+      "model": "google/gemini-2.5-flash",
+      "description": "Performance optimization refactoring specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "documenter-1": {
+      "model": "anthropic/claude-3-5-sonnet-20241022",
+      "description": "Technical documentation and API docs specialist",
+      "temperature": 0.7,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "documenter-2": {
+      "model": "google/gemini-1.5-flash",
+      "description": "Code comments and inline documentation specialist",
+      "temperature": 0.7,
+      "mode": "all"
+    },
+    "documenter-3": {
+      "model": "anthropic/claude-haiku-4-5",
+      "description": "User guides and tutorial documentation specialist",
+      "temperature": 0.8,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all"
+    },
+    "architect-1": {
+      "model": "anthropic/claude-opus-4-1",
+      "description": "System architecture and design specialist",
+      "temperature": 0.8,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "architect-2": {
+      "model": "google/gemini-2.5-pro",
+      "description": "Database schema and data architecture specialist",
+      "temperature": 0.7,
+      "mode": "all"
+    },
+    "architect-3": {
+      "model": "anthropic/claude-sonnet-4-0",
+      "description": "Microservices and distributed systems architect",
+      "temperature": 0.7,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "security-1": {
+      "model": "anthropic/claude-opus-4-0",
+      "description": "Security audit and vulnerability assessment specialist",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "security-2": {
+      "model": "google/gemini-2.5-pro-preview-05-06",
+      "description": "Authentication and authorization security specialist",
+      "temperature": 0.5,
+      "mode": "all"
+    },
+    "security-3": {
+      "model": "anthropic/claude-3-7-sonnet-latest",
+      "description": "Encryption and data protection specialist",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "devops-1": {
+      "model": "google/gemini-2.5-flash",
+      "description": "CI/CD pipeline and automation specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "devops-2": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "description": "Container orchestration and deployment specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "devops-3": {
+      "model": "google/gemini-2.0-flash",
+      "description": "Infrastructure as code and cloud configuration specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "database-1": {
+      "model": "anthropic/claude-opus-4-1",
+      "description": "SQL optimization and query performance specialist",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "database-2": {
+      "model": "google/gemini-2.5-pro",
+      "description": "NoSQL and distributed database specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "database-3": {
+      "model": "anthropic/claude-3-5-sonnet-20241022",
+      "description": "Database migration and schema evolution specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "api-1": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "description": "REST API design and implementation specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "api-2": {
+      "model": "google/gemini-2.5-flash-preview-05-20",
+      "description": "GraphQL API specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "api-3": {
+      "model": "anthropic/claude-3-7-sonnet-latest",
+      "description": "gRPC and real-time API specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "frontend-1": {
+      "model": "google/gemini-2.5-flash",
+      "description": "React and modern framework specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "frontend-2": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "description": "State management and application architecture specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "frontend-3": {
+      "model": "google/gemini-1.5-flash-8b",
+      "description": "CSS and styling specialist",
+      "temperature": 0.7,
+      "mode": "all"
+    },
+    "performance-1": {
+      "model": "anthropic/claude-opus-4-1",
+      "description": "Performance profiling and optimization specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "performance-2": {
+      "model": "google/gemini-2.5-pro-preview-06-05",
+      "description": "Memory management and resource optimization specialist",
+      "temperature": 0.5,
+      "mode": "all"
+    },
+    "performance-3": {
+      "model": "anthropic/claude-sonnet-4-0",
+      "description": "Load testing and scalability specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "data-engineer-1": {
+      "model": "google/gemini-2.5-pro",
+      "description": "ETL pipeline and data processing specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "data-engineer-2": {
+      "model": "anthropic/claude-opus-4-0",
+      "description": "Big data and streaming processing specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "ml-engineer-1": {
+      "model": "google/gemini-2.5-pro-preview-05-06",
+      "description": "Machine learning pipeline and model deployment specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "verifier": {
+      "model": "anthropic/claude-opus-4-1",
+      "description": "Cross-verification and quality assurance coordinator",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mandatory": true,
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "integrator": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "description": "Integration and final assembly specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "validator-1": {
+      "model": "google/gemini-2.5-flash",
+      "description": "Input validation and sanitization specialist - ALWAYS runs to validate user input",
+      "temperature": 0.5,
+      "mandatory": true,
+      "mode": "all"
+    },
+    "validator-2": {
+      "model": "anthropic/claude-3-5-haiku-latest",
+      "description": "Output validation and quality check specialist - ALWAYS runs to validate outputs",
+      "temperature": 0.5,
+      "mandatory": true,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all"
+    },
+    "analyzer-1": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "description": "Requirements analysis and clarification specialist - ALWAYS runs to understand requirements",
+      "temperature": 0.7,
+      "mandatory": true,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "analyzer-2": {
+      "model": "google/gemini-2.5-pro",
+      "description": "Complexity analysis and task decomposition assistant - ALWAYS runs to assess complexity",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "researcher-1": {
+      "model": "anthropic/claude-opus-4-1",
+      "description": "Technical research and best practices specialist",
+      "temperature": 0.7,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "researcher-2": {
+      "model": "google/gemini-2.5-pro",
+      "description": "API documentation and library research specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "researcher-3": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "description": "Algorithm and data structure research specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "optimizer-1": {
+      "model": "anthropic/claude-opus-4-1",
+      "description": "Code optimization and performance tuning specialist",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "optimizer-2": {
+      "model": "google/gemini-2.5-pro",
+      "description": "Query optimization and database performance specialist",
+      "temperature": 0.5,
+      "mode": "all"
+    },
+    "optimizer-3": {
+      "model": "anthropic/claude-sonnet-4-0",
+      "description": "Memory and resource optimization specialist",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "linter-1": {
+      "model": "google/gemini-2.5-flash",
+      "description": "Code style and linting enforcement specialist - ALWAYS runs to check code style",
+      "temperature": 0.4,
+      "mandatory": true,
+      "mode": "all"
+    },
+    "linter-2": {
+      "model": "anthropic/claude-3-5-haiku-latest",
+      "description": "Type checking and static analysis specialist",
+      "temperature": 0.4,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all"
+    },
+    "formatter-1": {
+      "model": "google/gemini-2.0-flash",
+      "description": "Code formatting and prettification specialist - ALWAYS runs to format output",
+      "temperature": 0.3,
+      "mandatory": true,
+      "mode": "all"
+    },
+    "formatter-2": {
+      "model": "google/gemini-1.5-flash-8b",
+      "description": "Documentation formatting and markdown specialist",
+      "temperature": 0.4,
+      "mandatory": true,
+      "mode": "all"
+    },
+    "accessibility-1": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "description": "Accessibility compliance and WCAG specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "accessibility-2": {
+      "model": "google/gemini-2.5-flash",
+      "description": "Screen reader and keyboard navigation specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "i18n-1": {
+      "model": "google/gemini-2.5-pro",
+      "description": "Internationalization and localization specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "i18n-2": {
+      "model": "anthropic/claude-3-7-sonnet-latest",
+      "description": "Translation and multilingual support specialist",
+      "temperature": 0.7,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "monitoring-1": {
+      "model": "google/gemini-2.5-flash",
+      "description": "Application monitoring and observability specialist",
+      "temperature": 0.5,
+      "mode": "all"
+    },
+    "monitoring-2": {
+      "model": "anthropic/claude-sonnet-4-0",
+      "description": "Logging and tracing implementation specialist",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "monitoring-3": {
+      "model": "google/gemini-2.0-flash",
+      "description": "Metrics and alerting configuration specialist",
+      "temperature": 0.5,
+      "mode": "all"
+    },
+    "compliance-1": {
+      "model": "anthropic/claude-opus-4-0",
+      "description": "Regulatory compliance and legal requirements specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "compliance-2": {
+      "model": "google/gemini-2.5-pro",
+      "description": "Data privacy and GDPR compliance specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "backup-1": {
+      "model": "google/gemini-2.5-flash",
+      "description": "Backup and disaster recovery planning specialist",
+      "temperature": 0.5,
+      "mode": "all"
+    },
+    "backup-2": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "description": "Data retention and archival specialist",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "migration-1": {
+      "model": "anthropic/claude-opus-4-1",
+      "description": "Legacy system migration and modernization specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "migration-2": {
+      "model": "google/gemini-2.5-pro",
+      "description": "Cloud migration and infrastructure transition specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "qa-1": {
+      "model": "anthropic/claude-opus-4-1",
+      "description": "Quality assurance strategy and test planning specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "qa-2": {
+      "model": "google/gemini-2.5-flash",
+      "description": "Manual testing and exploratory testing specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "qa-3": {
+      "model": "anthropic/claude-3-5-sonnet-20241022",
+      "description": "Automated testing and regression testing specialist",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "ux-1": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "description": "User experience design and usability specialist",
+      "temperature": 0.7,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "ux-2": {
+      "model": "google/gemini-2.5-pro",
+      "description": "User research and persona development specialist",
+      "temperature": 0.7,
+      "mode": "all"
+    },
+    "ux-3": {
+      "model": "anthropic/claude-3-7-sonnet-latest",
+      "description": "User journey mapping and flow optimization specialist",
+      "temperature": 0.7,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "error-handler-1": {
+      "model": "google/gemini-2.5-flash",
+      "description": "Error handling and exception management specialist - ALWAYS runs to add error handling",
+      "temperature": 0.5,
+      "mandatory": true,
+      "mode": "all"
+    },
+    "error-handler-2": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "description": "Error recovery and graceful degradation specialist",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "config-1": {
+      "model": "google/gemini-2.5-flash",
+      "description": "Configuration management and environment setup specialist",
+      "temperature": 0.5,
+      "mode": "all"
+    },
+    "config-2": {
+      "model": "anthropic/claude-3-5-sonnet-20241022",
+      "description": "Secrets management and credential handling specialist",
+      "temperature": 0.4,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "dependencies-1": {
+      "model": "google/gemini-2.5-flash",
+      "description": "Dependency management and package version specialist",
+      "temperature": 0.5,
+      "mode": "all"
+    },
+    "dependencies-2": {
+      "model": "anthropic/claude-sonnet-4-0",
+      "description": "Dependency vulnerability scanning specialist",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "cache-1": {
+      "model": "google/gemini-2.5-pro",
+      "description": "Caching strategy and implementation specialist",
+      "temperature": 0.5,
+      "mode": "all"
+    },
+    "cache-2": {
+      "model": "anthropic/claude-sonnet-4-5",
+      "description": "Cache invalidation and distributed caching specialist",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-flash",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "ai-specialist-1": {
+      "model": "anthropic/claude-opus-4-1",
+      "description": "AI/ML integration and prompt engineering specialist",
+      "temperature": 0.6,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "ai-specialist-2": {
+      "model": "google/gemini-2.5-pro-preview-05-06",
+      "description": "LLM application development and RAG specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    },
+    "blockchain-1": {
+      "model": "anthropic/claude-opus-4-0",
+      "description": "Blockchain and smart contract development specialist",
+      "temperature": 0.5,
+      "fallback_model": "google/gemini-2.5-pro",
+      "mode": "all",
+      "options": {
+        "thinking": true
+      }
+    },
+    "blockchain-2": {
+      "model": "google/gemini-2.5-pro",
+      "description": "Web3 and decentralized application specialist",
+      "temperature": 0.6,
+      "mode": "all"
+    }
+  }
+}
