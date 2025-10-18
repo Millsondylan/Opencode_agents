@@ -17,9 +17,11 @@ This repository contains a production-ready multi-agent system for OpenCode feat
 
 ### 🤖 Agent System
 - **96 unique specialized agents** (95 workers + 1 coordinator)
+- **Unified model system** - all agents follow the coordinator's model
 - **8 mandatory quality assurance agents** run on every task
 - **Intelligent delegation** - coordinator handles coordination, agents do the work
-- **Cost optimization** - 53 agents with Gemini fallback for >10 agent tasks (60-70% savings)
+- **Easy model switching** - change coordinator model, all agents update automatically
+- **Cost optimization** - Gemini fallback for >10 agent tasks (60-70% savings)
 
 ### 🌐 Web Search
 - **Proactive documentation lookup** - agents automatically search for latest docs
@@ -28,7 +30,8 @@ This repository contains a production-ready multi-agent system for OpenCode feat
 - **Best practices** - applies current industry standards
 
 ### 🧠 Extended Thinking
-- **49 Claude agents** with deep reasoning capabilities
+- **All 96 agents** with deep reasoning capabilities (when using Claude models)
+- **Automatic enablement** - thinking enabled/disabled based on model capabilities
 - **Complex problem analysis** - thorough architectural evaluation
 - **Security considerations** - comprehensive threat modeling
 - **Performance optimization** - data-driven decisions
@@ -57,11 +60,13 @@ This repository contains a production-ready multi-agent system for OpenCode feat
 ### Documentation
 - **`README.md`** - This file, quick start guide
 - **`OPENCODE.md`** - Main system instructions (auto-loaded by OpenCode)
+- **`CHANGE_MODEL.md`** - Guide to changing AI models for all agents
 - **`OPENCODE_FINAL_CONFIGURATION.md`** - Complete feature documentation
 - **`OPENCODE_SYSTEM_READY.md`** - System readiness report
 - **`OPENCODE_BALANCED_SYSTEM.md`** - Detailed usage guide
 - **`AGENT_ROSTER_AND_VISIBILITY.md`** - Complete agent catalog
 - **`OPENCODE_ARCHITECTURE.md`** - Design rationale and architecture
+- **`DEPLOYMENT_SUMMARY.md`** - Workflow deployment summary for JOURNAL_CURRENT and App_idea2
 
 ### 🤖 GitHub Workflows (24/7 Automation)
 - **`.github/workflows/code-enhancement.yml`** - Automated code quality improvements (runs every 6 hours)
@@ -72,6 +77,12 @@ This repository contains a production-ready multi-agent system for OpenCode feat
 - **`WORKFLOW_SETUP.md`** - Complete setup guide for GitHub workflows
 
 All workflows use **Gemini 2.5 Pro** for AI-powered analysis, enhancement, and debugging.
+
+### 🔧 Management Tools
+- **`sync_agent_models.py`** - Synchronize all agents to use coordinator's model
+  - Automatically updates all 96 agents
+  - Enables/disables extended thinking based on model
+  - Ensures consistent configuration
 
 ## 🚀 Quick Start
 
@@ -110,6 +121,35 @@ All workflows use **Gemini 2.5 Pro** for AI-powered analysis, enhancement, and d
    cd /path/to/your/project
    opencode
    ```
+
+## 🔄 Changing AI Models
+
+All 96 agents use the **same model as the coordinator**. To change models for all agents:
+
+1. **Edit the coordinator model** in `~/.config/opencode/opencode.json`:
+   ```json
+   {
+     "agent": {
+       "coordinator": {
+         "model": "google/gemini-2.5-pro"  // Change this
+       }
+     }
+   }
+   ```
+
+2. **Run the sync script**:
+   ```bash
+   python3 sync_agent_models.py ~/.config/opencode/opencode.json
+   ```
+
+All 96 agents will automatically update to use the new model!
+
+**Popular Models:**
+- `anthropic/claude-sonnet-4-5` (default) - Balanced quality/cost with extended thinking
+- `google/gemini-2.5-pro` - 65% cheaper, excellent quality
+- `anthropic/claude-opus-4-1` - Maximum reasoning, higher cost
+
+See [CHANGE_MODEL.md](CHANGE_MODEL.md) for detailed instructions and model comparisons.
 
 ## 📖 Agent Roster
 
