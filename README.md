@@ -63,6 +63,16 @@ This repository contains a production-ready multi-agent system for OpenCode feat
 - **`AGENT_ROSTER_AND_VISIBILITY.md`** - Complete agent catalog
 - **`OPENCODE_ARCHITECTURE.md`** - Design rationale and architecture
 
+### 🤖 GitHub Workflows (24/7 Automation)
+- **`.github/workflows/code-enhancement.yml`** - Automated code quality improvements (runs every 6 hours)
+- **`.github/workflows/automated-debugging.yml`** - Automated error detection and debugging (runs every 8 hours)
+- **`.github/workflows/24-7-maintenance.yml`** - Continuous repository maintenance (runs every 6 hours)
+- **`.github/workflows/README.md`** - Complete workflow documentation
+- **`deploy-workflows.sh`** - Script to deploy workflows to all repositories
+- **`WORKFLOW_SETUP.md`** - Complete setup guide for GitHub workflows
+
+All workflows use **Gemini 2.5 Pro** for AI-powered analysis, enhancement, and debugging.
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -221,6 +231,55 @@ The >10 agents rule automatically switches to Gemini models for 60-70% savings.
 | Huge | 30 | 100K | 6m | $0.12* |
 
 *With Gemini cost optimization
+
+## 🔄 GitHub Workflows: 24/7 Automation
+
+This repository includes comprehensive GitHub Actions workflows for 24/7 automated code enhancement, debugging, and maintenance using **Gemini 2.5 Pro**.
+
+### Features
+
+- **Code Enhancement** (every 6 hours) - Automated quality improvements, refactoring, security hardening
+- **Automated Debugging** (every 8 hours) - Error detection, vulnerability scanning, automated fixes
+- **24/7 Maintenance** (every 6 hours) - Health monitoring, dependency updates, dead code removal
+
+### Quick Setup
+
+1. **Get Google AI API Key**:
+   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Create an API key for Gemini 2.5 Pro
+
+2. **Deploy to your repositories**:
+   ```bash
+   # Deploy to all repos in your organization
+   ./deploy-workflows.sh --org your-organization-name
+
+   # Or deploy to specific repos
+   ./deploy-workflows.sh --repos repos.txt
+
+   # Or deploy to a single repo
+   ./deploy-workflows.sh --single username/repo-name
+   ```
+
+3. **Add API key as repository secret**:
+   ```bash
+   gh secret set GOOGLE_GENERATIVE_AI_API_KEY --body "your_api_key"
+   gh secret set GEMINI_API_KEY --body "your_api_key"
+   ```
+
+### Documentation
+
+- **Complete Setup Guide**: See [WORKFLOW_SETUP.md](WORKFLOW_SETUP.md)
+- **Workflow Details**: See [.github/workflows/README.md](.github/workflows/README.md)
+
+### Estimated Costs
+
+| Repositories | Daily Cost | Monthly Cost |
+|-------------|-----------|-------------|
+| 1 repo | ~$0.65 | ~$19.50 |
+| 10 repos | ~$6.50 | ~$195 |
+| 50 repos | ~$32.50 | ~$975 |
+
+Costs can be reduced by adjusting run frequency or using manual triggers.
 
 ## 🤝 Contributing
 

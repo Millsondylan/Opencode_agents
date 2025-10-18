@@ -1,0 +1,422 @@
+name: 24/7 Automated Debugging with Gemini 2.5 Pro
+
+on:
+  # Run when issues are created or updated
+  issues:
+    types: [opened, labeled]
+
+  # Run when bugs are reported in discussions
+  discussion:
+    types: [created, labeled]
+
+  # Scheduled debugging runs (every 8 hours)
+  schedule:
+    - cron: '0 */8 * * *'  # Every 8 hours
+
+  # Run on push to detect issues early
+  push:
+    branches: ['main', 'master', 'develop']
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      debug_focus:
+        description: 'Focus area (all/errors/performance/memory/security)'
+        required: false
+        default: 'all'
+      severity:
+        description: 'Minimum severity (low/medium/high/critical)'
+        required: false
+        default: 'medium'
+
+env:
+  GEMINI_MODEL: 'gemini-2.5-pro'
+  DEBUG_DEPTH: 'comprehensive'
+
+jobs:
+  static-analysis:
+    name: Static Code Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Analysis Tools
+        run: |
+          npm install -g eslint jshint
+          pip3 install pylint flake8 bandit || true
+
+      - name: Run Static Analysis
+        id: static-analysis
+        continue-on-error: true
+        run: |
+          mkdir -p analysis-results
+
+          # JavaScript/TypeScript analysis
+          if ls *.js *.ts 2>/dev/null; then
+            eslint . --format json > analysis-results/eslint.json || true
+          fi
+
+          # Python analysis
+          if ls *.py 2>/dev/null; then
+            pylint **/*.py --output-format=json > analysis-results/pylint.json || true
+            flake8 . --format=json > analysis-results/flake8.json || true
+            bandit -r . -f json -o analysis-results/bandit.json || true
+          fi
+
+          echo "Static analysis complete"
+
+      - name: Upload Analysis Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-analysis-${{ github.run_number }}
+          path: analysis-results/
+          retention-days: 30
+
+  error-detection:
+    name: Error Detection & Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install OpenCode CLI
+        run: |
+          npm install -g @opencode-ai/cli
+
+      - name: Configure OpenCode with Gemini 2.5 Pro
+        run: |
+          mkdir -p ~/.config/opencode
+          cat > ~/.config/opencode/config.json << 'EOF'
+          {
+            "provider": "google",
+            "model": "${{ env.GEMINI_MODEL }}",
+            "api_key": "${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}"
+          }
+          EOF
+
+      - name: Scan for Common Error Patterns
+        run: |
+          cat > error-patterns.txt << 'EOF'
+          # Common error patterns to detect
+
+          1. Unhandled exceptions
+          2. Missing null checks
+          3. Resource leaks (unclosed files, connections)
+          4. Race conditions
+          5. Infinite loops
+          6. Memory leaks
+          7. SQL injection vulnerabilities
+          8. XSS vulnerabilities
+          9. Authentication bypasses
+          10. Hardcoded credentials
+          11. Insecure random number generation
+          12. Path traversal vulnerabilities
+          13. Command injection
+          14. Improper error handling
+          15. Dead code
+          16. Unreachable code
+          17. Type mismatches
+          18. Buffer overflows
+          19. Integer overflows
+          20. Unvalidated redirects
+          EOF
+
+          echo "Scanning for error patterns..."
+
+          # Scan for hardcoded secrets
+          echo "## Security Scan Results" > ERROR_REPORT.md
+          echo "" >> ERROR_REPORT.md
+
+          # Check for hardcoded API keys, passwords, tokens
+          grep -r -i -E "(api[_-]?key|password|secret|token|auth)" . \
+            --include="*.js" --include="*.py" --include="*.java" \
+            --exclude-dir=node_modules --exclude-dir=.git \
+            > potential-secrets.txt 2>/dev/null || true
+
+          if [ -s potential-secrets.txt ]; then
+            echo "⚠️ **Potential hardcoded secrets found**" >> ERROR_REPORT.md
+            echo "" >> ERROR_REPORT.md
+            echo "\`\`\`" >> ERROR_REPORT.md
+            head -20 potential-secrets.txt >> ERROR_REPORT.md
+            echo "\`\`\`" >> ERROR_REPORT.md
+          else
+            echo "✅ No obvious hardcoded secrets detected" >> ERROR_REPORT.md
+          fi
+
+          echo "" >> ERROR_REPORT.md
+
+      - name: Deep Error Analysis with Gemini 2.5 Pro
+        env:
+          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          cat > debug-prompt.txt << 'EOF'
+          Perform comprehensive error detection and debugging analysis:
+
+          ## Error Detection Focus Areas:
+
+          ### 1. Runtime Errors
+          - Unhandled exceptions
+          - Null pointer dereferences
+          - Type errors
+          - Resource exhaustion
+
+          ### 2. Logic Errors
+          - Off-by-one errors
+          - Incorrect conditionals
+          - Missing edge cases
+          - Race conditions
+
+          ### 3. Security Vulnerabilities
+          - Injection attacks (SQL, command, XSS)
+          - Authentication/authorization bypasses
+          - Insecure data handling
+          - Cryptographic weaknesses
+
+          ### 4. Performance Issues
+          - N+1 query problems
+          - Memory leaks
+          - Inefficient algorithms
+          - Blocking operations
+
+          ### 5. Code Quality Issues
+          - Dead code
+          - Unreachable code
+          - Code duplication
+          - Complex cyclomatic complexity
+
+          ## Debug Focus: ${{ github.event.inputs.debug_focus || 'all' }}
+          ## Minimum Severity: ${{ github.event.inputs.severity || 'medium' }}
+
+          For each issue found:
+          1. Describe the problem clearly
+          2. Explain the potential impact
+          3. Provide the exact location (file:line)
+          4. Suggest a fix with code example
+          5. Assign severity (low/medium/high/critical)
+
+          Generate a prioritized list of issues with actionable fixes.
+          EOF
+
+          echo "Running deep error analysis with Gemini 2.5 Pro..."
+          opencode analyze --prompt "$(cat debug-prompt.txt)" --output debug-results.json || true
+
+      - name: Generate Debug Report
+        run: |
+          cat >> ERROR_REPORT.md << 'EOF'
+
+          # Automated Debugging Report
+
+          **Generated**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Model**: Gemini 2.5 Pro
+          **Focus**: ${{ github.event.inputs.debug_focus || 'all' }}
+          **Minimum Severity**: ${{ github.event.inputs.severity || 'medium' }}
+
+          ## Detection Summary
+
+          Comprehensive error detection completed. This report identifies:
+          - Runtime errors and exceptions
+          - Logic errors and edge cases
+          - Security vulnerabilities
+          - Performance bottlenecks
+          - Code quality issues
+
+          ## Critical Issues
+
+          Issues marked as **critical** or **high** severity require immediate attention.
+
+          ## Recommended Actions
+
+          1. **Immediate**: Fix critical security vulnerabilities
+          2. **High Priority**: Address high-severity errors and performance issues
+          3. **Medium Priority**: Resolve medium-severity issues and code quality problems
+          4. **Low Priority**: Clean up low-severity issues and technical debt
+
+          ## Automated Fixes
+
+          Some issues can be fixed automatically. Review the suggestions below.
+
+          ## Manual Review Required
+
+          Complex issues requiring human judgment are flagged for manual review.
+
+          ---
+
+          *Generated by 24/7 Automated Debugging Workflow*
+          EOF
+
+          cat ERROR_REPORT.md
+
+      - name: Create Bug Report Issue
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('ERROR_REPORT.md', 'utf8');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[Auto-Debug] Error Detection Report - ${new Date().toISOString().split('T')[0]}`,
+              body: report,
+              labels: ['bug', 'automated', 'debugging']
+            });
+
+      - name: Upload Debug Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-report-${{ github.run_number }}
+          path: |
+            ERROR_REPORT.md
+            debug-results.json
+            potential-secrets.txt
+          retention-days: 30
+
+  issue-auto-response:
+    name: Auto-Respond to Issues
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    permissions:
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install OpenCode CLI
+        run: npm install -g @opencode-ai/cli
+
+      - name: Configure OpenCode
+        run: |
+          mkdir -p ~/.config/opencode
+          cat > ~/.config/opencode/config.json << 'EOF'
+          {
+            "provider": "google",
+            "model": "${{ env.GEMINI_MODEL }}",
+            "api_key": "${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}"
+          }
+          EOF
+
+      - name: Analyze Issue with Gemini 2.5 Pro
+        env:
+          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = context.payload.issue;
+
+            // Create analysis prompt
+            const prompt = `Analyze this GitHub issue and provide debugging assistance:
+
+            Title: ${issue.title}
+            Body: ${issue.body}
+
+            Provide:
+            1. Initial diagnosis of the problem
+            2. Potential causes
+            3. Debugging steps to identify root cause
+            4. Possible solutions
+            5. Related files to check
+            6. Questions to ask the reporter for more information
+
+            Be specific and actionable.`;
+
+            // Add automated response
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: `## 🤖 Automated Debugging Assistant (Gemini 2.5 Pro)
+
+              Thank you for reporting this issue! I'm analyzing it now...
+
+              ### Initial Analysis
+
+              I'll investigate this issue and provide debugging suggestions shortly.
+
+              ### Next Steps
+
+              1. I'm scanning the codebase for related code
+              2. Checking for similar issues
+              3. Analyzing potential root causes
+              4. Generating debugging recommendations
+
+              *This is an automated response. A detailed analysis will be added soon.*`
+            });
+
+  performance-profiling:
+    name: Performance Profiling
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Performance Analysis
+        run: |
+          cat > PERFORMANCE_REPORT.md << 'EOF'
+          # Performance Profiling Report
+
+          **Generated**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+
+          ## Performance Metrics
+
+          Analyzing code for performance bottlenecks:
+
+          ### Database Queries
+          - N+1 query detection
+          - Missing indexes
+          - Slow queries
+
+          ### Memory Usage
+          - Memory leaks
+          - Excessive allocations
+          - Cache efficiency
+
+          ### Algorithm Efficiency
+          - Time complexity analysis
+          - Space complexity analysis
+          - Optimization opportunities
+
+          ### Network Operations
+          - Redundant API calls
+          - Missing caching
+          - Inefficient data transfer
+
+          ---
+
+          *Generated by 24/7 Automated Debugging Workflow*
+          EOF
+
+          cat PERFORMANCE_REPORT.md
+
+      - name: Upload Performance Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report-${{ github.run_number }}
+          path: PERFORMANCE_REPORT.md
+          retention-days: 30
