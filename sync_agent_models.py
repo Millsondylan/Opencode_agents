@@ -50,6 +50,11 @@ def sync_models(config_path):
     updated_count = 0
     thinking_enabled = 0
     thinking_disabled = 0
+    fallback_removed = 0
+
+    print("\n🔒 STRICT MODE: Removing ALL fallback models")
+    print("   Agents will ONLY use coordinator's model")
+    print()
 
     for agent_name, agent_config in config['agent'].items():
         if agent_name in ('_base', 'coordinator'):
@@ -59,14 +64,10 @@ def sync_models(config_path):
         old_model = agent_config.get('model')
         agent_config['model'] = coordinator_model
 
-        # Remove fallback if not using Claude (or set to coordinator model)
+        # STRICT MODE: Remove ALL fallback models for 100% predictable usage
         if 'fallback_model' in agent_config:
-            if using_claude:
-                # Keep Gemini fallback for >10 agents cost optimization
-                pass
-            else:
-                # If not using Claude, no need for fallback
-                del agent_config['fallback_model']
+            del agent_config['fallback_model']
+            fallback_removed += 1
 
         # Handle extended thinking
         if supports_thinking:
@@ -100,6 +101,8 @@ def sync_models(config_path):
         json.dump(config, f, indent=2)
 
     print(f"\n✅ Updated {updated_count} agents to use: {coordinator_model}")
+    if fallback_removed > 0:
+        print(f"✅ Removed {fallback_removed} fallback models (strict enforcement)")
     if thinking_enabled > 0:
         print(f"✅ Enabled extended thinking for {thinking_enabled} agents")
     if thinking_disabled > 0:
@@ -109,6 +112,12 @@ def sync_models(config_path):
     print(f"   Total agents: {len(config['agent']) - 2}")  # Exclude _base and coordinator
     print(f"   All using: {coordinator_model}")
     print(f"   Extended thinking: {'Enabled' if supports_thinking else 'Disabled'}")
+    print(f"   Fallback models: None (strict enforcement)")
+    print()
+    print("🔒 STRICT ENFORCEMENT ENABLED:")
+    print(f"   Every agent call will use: {coordinator_model}")
+    print("   No alternative models configured")
+    print("   100% predictable usage")
 
     return True
 
