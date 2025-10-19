@@ -1,0 +1,89 @@
+╔══════════════════════════════════════════════════════════════╗
+║  FORCE COMPLETION COMMANDS - Copy/Paste When Needed         ║
+╚══════════════════════════════════════════════════════════════╝
+
+IF COORDINATOR STOPS MID-TASK, USE ONE OF THESE:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 BASIC COMPLETION COMMANDS
+
+Continue - task is NOT complete
+
+Execute the plan, don't just describe it
+
+Complete ALL work before responding
+
+Finish everything, then respond once
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔥 AGGRESSIVE COMMANDS (if basic doesn't work)
+
+No planning - DO IT NOW. Complete everything.
+
+Your response blocker should have stopped you. Complete 100% of work before responding.
+
+Stop explaining. Start executing. Finish the entire task.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💣 NUCLEAR OPTION (if nothing else works)
+
+⛔ STOP. Your completion checks failed:
+- Request NOT 100% complete
+- Code NOT tested
+- Work NOT production-ready
+
+DO NOT respond until:
+✅ All code written AND tested
+✅ All tests passing
+✅ Zero placeholders
+✅ Production-ready deliverables
+✅ User can use immediately
+
+Complete EVERYTHING now.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 VERIFICATION COMMAND
+
+Check your completion checklist now. Are ALL items complete?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 EXAMPLES
+
+Instead of: "I'll update the todo list..."
+Tell it: "No - COMPLETE the actual work first"
+
+Instead of: "Here's my plan to fix this..."
+Tell it: "Execute the plan now, don't describe it"
+
+Instead of: "The problem is X, so I need to Y..."
+Tell it: "Fix X by doing Y - complete it now"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 WHAT "COMPLETE" MEANS
+
+✅ Code written, tested, and verified working
+✅ All tests passing
+✅ Zero TODO/FIXME/placeholders
+✅ Production-ready (user can use immediately)
+✅ Documentation complete
+
+❌ Plans made but not executed
+❌ Problems identified but not solved
+❌ Todos updated but work not done
+❌ Code written but not tested
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+QUICK REFERENCE:
+• Coordinator stopping early? → Use basic commands
+• Still stopping? → Use aggressive commands
+• STILL stopping? → Use nuclear option
+• Can't get it to work? → See STOP_COORDINATOR_STOPPING.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
